@@ -1,0 +1,19 @@
+.info-card {
+  border: 1px solid rgba(237, 238, 240, 0.08);
+  border-radius: 24px;
+  background:
+    linear-gradient(180deg, rgba(26, 75, 120, 0.12), rgba(17, 22, 28, 0.72)), rgba(17, 22, 28, 0.88);
+  box-shadow: 0 24px 60px rgba(0, 0, 0, 0.24);
+}
+
+.info-card__inner {
+  display: grid;
+  gap: 12px;
+  min-height: 240px;
+  padding: 24px;
+}
+
+.info-card__footer {
+  padding-top: 8px;
+  color: var(--app-text-secondary);
+}
