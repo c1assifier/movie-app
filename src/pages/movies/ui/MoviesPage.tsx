@@ -116,9 +116,6 @@ export function MoviesPage() {
       <header className="movies-page__header">
         <div className="movies-page__title-block">
           <h1 className="movies-page__title">Каталог</h1>
-          <Text className="movies-page__subtitle">
-            Первые фильмы из API уже загружены. Дальше сюда добавим фильтры и бесконечный скролл.
-          </Text>
         </div>
 
         <span className="movies-page__meta">Найдено: {moviesState.total}</span>

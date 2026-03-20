@@ -17,7 +17,19 @@ export default defineConfig(({ mode }) => {
     },
     define: {
       __POISKKINO_API_URL__: JSON.stringify(env.POISKKINO_API_URL),
-      __POISKKINO_API_KEY__: JSON.stringify(env.POISKKINO_API_KEY),
+    },
+    server: {
+      proxy: {
+        '/api': {
+          target: 'https://api.poiskkino.dev/v1.4',
+          changeOrigin: true,
+          secure: true,
+          rewrite: (requestPath) => requestPath.replace(/^\/api/, ''),
+          headers: {
+            'X-API-KEY': env.POISKKINO_API_KEY,
+          },
+        },
+      },
     },
   }
 })

@@ -1,3 +1,4 @@
+import { useState } from 'react'
 import { Link } from 'react-router-dom'
 import { Button, Text } from '@vkontakte/vkui'
 import { buildMovieDetailsRoute } from '@/app/router/routes'
@@ -17,12 +18,21 @@ function formatMovieMeta(year: number | null, rating: number | null) {
 
 export function MovieCard({ movie }: MovieCardProps) {
   const meta = formatMovieMeta(movie.year, movie.rating)
+  const [imageFailed, setImageFailed] = useState(false)
+  const posterUrl = imageFailed ? null : movie.posterUrl
 
   return (
     <article className="movie-card">
       <Link to={buildMovieDetailsRoute(movie.id)} className="movie-card__poster-link">
-        {movie.posterUrl ? (
-          <img className="movie-card__poster" src={movie.posterUrl} alt={movie.title} />
+        {posterUrl ? (
+          <img
+            className="movie-card__poster"
+            src={posterUrl}
+            alt={movie.title}
+            loading="lazy"
+            referrerPolicy="no-referrer"
+            onError={() => setImageFailed(true)}
+          />
         ) : (
           <div className="movie-card__poster-placeholder">
             <span>Нет постера</span>
