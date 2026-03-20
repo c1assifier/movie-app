@@ -1,6 +1,24 @@
 import type { MovieDetails, MovieListItem, PaginatedMovies } from '@/types/movie'
 import type { MovieApiResponse, MoviesListResponse } from '@/api/movies/movies.types'
 
+function proxifyPosterUrl(url: string | null) {
+  if (!url) {
+    return null
+  }
+
+  try {
+    const parsedUrl = new URL(url)
+
+    if (parsedUrl.hostname === 'avatars.mds.yandex.net') {
+      return `/poster-proxy${parsedUrl.pathname}${parsedUrl.search}`
+    }
+
+    return url
+  } catch {
+    return url
+  }
+}
+
 function resolveMovieTitle(movie: MovieApiResponse) {
   return movie.name || movie.alternativeName || 'Без названия'
 }
@@ -10,7 +28,9 @@ function resolveMovieRating(movie: MovieApiResponse) {
 }
 
 function resolveMoviePoster(movie: MovieApiResponse) {
-  return movie.poster?.url || movie.poster?.previewUrl || null
+  const posterUrl = movie.poster?.url || movie.poster?.previewUrl || null
+
+  return proxifyPosterUrl(posterUrl)
 }
 
 function resolveMovieGenres(movie: MovieApiResponse) {
