@@ -1,10 +1,12 @@
 import { useEffect, useState } from 'react'
-import { useNavigate, useParams } from 'react-router-dom'
+import { useLocation, useNavigate, useParams } from 'react-router-dom'
+import { FaRegStar, FaStar } from 'react-icons/fa'
 import { Button, Group, Spinner, Text } from '@vkontakte/vkui'
 import { getMovieById } from '@/api/movies'
+import { useFavorites } from '@/app/providers/favorites-context'
 import { ROUTES } from '@/app/router/routes'
 import { InfoCard } from '@/components/info-card/InfoCard'
-import type { MovieDetails } from '@/types/movie'
+import type { MovieDetails, MovieListItem } from '@/types/movie'
 import '@/pages/movie-details/ui/MovieDetailsPage.css'
 
 type MovieDetailsState =
@@ -45,6 +47,8 @@ function formatReleaseDate(releaseDate: string | null) {
 export function MovieDetailsPage() {
   const { movieId } = useParams()
   const navigate = useNavigate()
+  const location = useLocation()
+  const { isFavorite, removeFromFavorites, requestAddToFavorites } = useFavorites()
   const [movieState, setMovieState] = useState<MovieDetailsState>(initialState)
   const [imageFailed, setImageFailed] = useState(false)
 
@@ -149,11 +153,37 @@ export function MovieDetailsPage() {
   const releaseDate = formatReleaseDate(movie.releaseDate)
   const duration = movie.duration ? `${movie.duration} мин` : 'Не указана'
   const description = movie.description || 'Описание для этого фильма пока отсутствует.'
+  const favoriteMovie: MovieListItem = {
+    id: movie.id,
+    title: movie.title,
+    year: movie.year,
+    rating: movie.rating,
+    posterUrl: movie.posterUrl,
+  }
+  const movieIsFavorite = isFavorite(movie.id)
+  const backRoute =
+    typeof location.state === 'object' &&
+    location.state !== null &&
+    'from' in location.state &&
+    typeof location.state.from === 'string'
+      ? location.state.from
+      : null
 
   return (
     <section className="movie-details-page">
       <div className="movie-details-page__topbar">
-        <Button mode="tertiary" size="m" onClick={() => navigate(-1)}>
+        <Button
+          mode="tertiary"
+          size="m"
+          onClick={() => {
+            if (backRoute) {
+              navigate(backRoute)
+              return
+            }
+
+            navigate(-1)
+          }}
+        >
           Назад
         </Button>
       </div>
@@ -197,9 +227,25 @@ export function MovieDetailsPage() {
                 <span className="movie-details-page__genre">Жанры не указаны</span>
               )}
             </div>
+
           </div>
 
           <aside className="movie-details-page__visual">
+            <button
+              type="button"
+              className={
+                movieIsFavorite
+                  ? 'movie-details-page__favorite movie-details-page__favorite--active'
+                  : 'movie-details-page__favorite'
+              }
+              aria-label={movieIsFavorite ? 'Убрать из избранного' : 'Добавить в избранное'}
+              onClick={() =>
+                movieIsFavorite ? removeFromFavorites(movie.id) : requestAddToFavorites(favoriteMovie)
+              }
+            >
+              {movieIsFavorite ? <FaStar /> : <FaRegStar />}
+            </button>
+
             {posterUrl ? (
               <img
                 className="movie-details-page__visual-poster"

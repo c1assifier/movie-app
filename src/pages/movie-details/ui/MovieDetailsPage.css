@@ -72,6 +72,45 @@
   box-shadow: 0 24px 50px rgba(0, 0, 0, 0.24);
 }
 
+.movie-details-page__favorite {
+  position: absolute;
+  top: 18px;
+  right: 18px;
+  z-index: 2;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 44px;
+  height: 44px;
+  border: 1px solid rgba(237, 238, 240, 0.12);
+  border-radius: 999px;
+  background: rgba(8, 12, 17, 0.84);
+  color: #f2f4f7;
+  cursor: pointer;
+  backdrop-filter: blur(8px);
+  transition:
+    transform 0.2s ease,
+    border-color 0.2s ease,
+    background-color 0.2s ease,
+    color 0.2s ease;
+}
+
+.movie-details-page__favorite svg {
+  width: 20px;
+  height: 20px;
+}
+
+.movie-details-page__favorite:hover {
+  transform: scale(1.04);
+  border-color: rgba(255, 215, 120, 0.42);
+}
+
+.movie-details-page__favorite--active {
+  border-color: rgba(255, 215, 120, 0.4);
+  background: rgba(58, 45, 12, 0.88);
+  color: #ffd76f;
+}
+
 .movie-details-page__visual-poster {
   width: 100%;
   height: 100%;
@@ -226,5 +265,10 @@
 
   .movie-details-page__visual {
     min-height: 340px;
+  }
+
+  .movie-details-page__favorite {
+    top: 14px;
+    right: 14px;
   }
 }

@@ -2,6 +2,7 @@ import { useEffect, useMemo, useRef, useState } from 'react'
 import { useSearchParams } from 'react-router-dom'
 import { Button, Group, Spinner, Text } from '@vkontakte/vkui'
 import { getMovies } from '@/api/movies'
+import { useFavorites } from '@/app/providers/favorites-context'
 import { MovieCard } from '@/components/movie-card/MovieCard'
 import { InfoCard } from '@/components/info-card/InfoCard'
 import {
@@ -67,6 +68,7 @@ export function MoviesPage() {
   const isFetchingMoreRef = useRef(false)
   const currentPageRef = useRef(0)
   const totalPagesRef = useRef(0)
+  const { isFavorite, removeFromFavorites, requestAddToFavorites } = useFavorites()
   const filters = useMemo(() => parseMoviesFilters(searchParams), [searchParams])
   const moviesQuery = useMemo(() => mapFiltersToMoviesQuery(filters), [filters])
 
@@ -314,7 +316,14 @@ export function MoviesPage() {
 
       <div className="movies-page__grid">
         {moviesState.items.map((movie) => (
-          <MovieCard key={movie.id} movie={movie} />
+          <MovieCard
+            key={movie.id}
+            movie={movie}
+            isFavorite={isFavorite(movie.id)}
+            onFavoriteToggle={() =>
+              isFavorite(movie.id) ? removeFromFavorites(movie.id) : requestAddToFavorites(movie)
+            }
+          />
         ))}
       </div>
 
