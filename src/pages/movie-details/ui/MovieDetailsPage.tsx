@@ -158,27 +158,8 @@ export function MovieDetailsPage() {
         </Button>
       </div>
 
-      <div className="movie-details-page__layout">
-        <aside className="movie-details-page__poster-card">
-          <div className="movie-details-page__poster-wrap">
-            {posterUrl ? (
-              <img
-                className="movie-details-page__poster"
-                src={posterUrl}
-                alt={movie.title}
-                loading="eager"
-                referrerPolicy="no-referrer"
-                onError={() => setImageFailed(true)}
-              />
-            ) : (
-              <div className="movie-details-page__poster-placeholder">
-                <span>Нет постера</span>
-              </div>
-            )}
-          </div>
-        </aside>
-
-        <article className="movie-details-page__content-card">
+      <article className="movie-details-page__hero">
+        <div className="movie-details-page__hero-inner">
           <div className="movie-details-page__content">
             <header className="movie-details-page__header">
               <h1 className="movie-details-page__title">{movie.title}</h1>
@@ -217,8 +198,25 @@ export function MovieDetailsPage() {
               )}
             </div>
           </div>
-        </article>
-      </div>
+
+          <aside className="movie-details-page__visual">
+            {posterUrl ? (
+              <img
+                className="movie-details-page__visual-poster"
+                src={posterUrl}
+                alt={movie.title}
+                loading="eager"
+                referrerPolicy="no-referrer"
+                onError={() => setImageFailed(true)}
+              />
+            ) : (
+              <div className="movie-details-page__visual-placeholder">
+                <span>Нет постера</span>
+              </div>
+            )}
+          </aside>
+        </div>
+      </article>
     </section>
   )
 }
