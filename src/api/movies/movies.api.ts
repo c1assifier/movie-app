@@ -1,10 +1,12 @@
 import { requestJson } from '@/api/http/http-client'
 import { mapMovieDetails, mapPaginatedMovies } from '@/api/movies/movies.mappers'
+import { getMockMovieById, getMockMovies } from '@/api/movies/movies.mock'
 import type {
   MoviesListResponse,
   MovieApiResponse,
   MoviesQueryParams,
 } from '@/api/movies/movies.types'
+import { ApiError } from '@/api/http/http-client'
 
 const MOVIE_LIST_FIELDS = ['id', 'name', 'alternativeName', 'year', 'poster', 'rating']
 
@@ -38,22 +40,48 @@ function createMoviesQuery(params: MoviesQueryParams = {}) {
   }
 }
 
-export async function getMovies(params?: MoviesQueryParams) {
-  const response = await requestJson<MoviesListResponse>({
-    path: '/movie',
-    query: createMoviesQuery(params),
-  })
+const shouldUseMockApi = !__POISKKINO_HAS_API_KEY__
 
-  return mapPaginatedMovies(response)
+export async function getMovies(params?: MoviesQueryParams) {
+  if (shouldUseMockApi) {
+    return getMockMovies(params)
+  }
+
+  try {
+    const response = await requestJson<MoviesListResponse>({
+      path: '/movie',
+      query: createMoviesQuery(params),
+    })
+
+    return mapPaginatedMovies(response)
+  } catch (error) {
+    if (error instanceof ApiError && [401, 403, 429].includes(error.status)) {
+      return getMockMovies(params)
+    }
+
+    throw error
+  }
 }
 
 export async function getMovieById(movieId: string | number) {
-  const response = await requestJson<MovieApiResponse>({
-    path: `/movie/${movieId}`,
-    query: {
-      selectFields: MOVIE_DETAILS_FIELDS,
-    },
-  })
+  if (shouldUseMockApi) {
+    return getMockMovieById(movieId)
+  }
 
-  return mapMovieDetails(response)
+  try {
+    const response = await requestJson<MovieApiResponse>({
+      path: `/movie/${movieId}`,
+      query: {
+        selectFields: MOVIE_DETAILS_FIELDS,
+      },
+    })
+
+    return mapMovieDetails(response)
+  } catch (error) {
+    if (error instanceof ApiError && [401, 403, 429].includes(error.status)) {
+      return getMockMovieById(movieId)
+    }
+
+    throw error
+  }
 }
