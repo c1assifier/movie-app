@@ -1,6 +1,7 @@
 import { useState } from 'react'
 import { Link, type To } from 'react-router-dom'
 import { FaRegStar, FaStar } from 'react-icons/fa'
+import { LuScale } from 'react-icons/lu'
 import { Button, Text } from '@vkontakte/vkui'
 import { buildMovieDetailsRoute } from '@/app/router/routes'
 import type { MovieListItem } from '@/types/movie'
@@ -13,6 +14,8 @@ type MovieCardProps = {
   openButtonTo?: To
   isFavorite?: boolean
   onFavoriteToggle?: () => void
+  isCompared?: boolean
+  onCompareToggle?: () => void
 }
 
 function formatMovieMeta(year: number | null, rating: number | null) {
@@ -29,6 +32,8 @@ export function MovieCard({
   openButtonTo,
   isFavorite = false,
   onFavoriteToggle,
+  isCompared = false,
+  onCompareToggle,
 }: MovieCardProps) {
   const meta = formatMovieMeta(movie.year, movie.rating)
   const [imageFailed, setImageFailed] = useState(false)
@@ -62,6 +67,17 @@ export function MovieCard({
           onClick={onFavoriteToggle}
         >
           {isFavorite ? <FaStar /> : <FaRegStar />}
+        </button>
+      ) : null}
+
+      {onCompareToggle ? (
+        <button
+          type="button"
+          className={isCompared ? 'movie-card__compare movie-card__compare--active' : 'movie-card__compare'}
+          aria-label={isCompared ? 'Убрать из сравнения' : 'Добавить в сравнение'}
+          onClick={onCompareToggle}
+        >
+          <LuScale />
         </button>
       ) : null}
 

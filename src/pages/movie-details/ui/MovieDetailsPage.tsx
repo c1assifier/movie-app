@@ -1,8 +1,10 @@
 import { useEffect, useState } from 'react'
 import { useLocation, useNavigate, useParams } from 'react-router-dom'
 import { FaRegStar, FaStar } from 'react-icons/fa'
+import { LuScale } from 'react-icons/lu'
 import { Button, Group, Spinner, Text } from '@vkontakte/vkui'
 import { getMovieById } from '@/api/movies'
+import { useCompare } from '@/app/providers/compare-context'
 import { useFavorites } from '@/app/providers/favorites-context'
 import { ROUTES } from '@/app/router/routes'
 import { InfoCard } from '@/components/info-card/InfoCard'
@@ -48,6 +50,7 @@ export function MovieDetailsPage() {
   const { movieId } = useParams()
   const navigate = useNavigate()
   const location = useLocation()
+  const { isCompared, toggleCompareMovie } = useCompare()
   const { isFavorite, removeFromFavorites, requestAddToFavorites } = useFavorites()
   const [movieState, setMovieState] = useState<MovieDetailsState>(initialState)
   const [imageFailed, setImageFailed] = useState(false)
@@ -161,6 +164,7 @@ export function MovieDetailsPage() {
     posterUrl: movie.posterUrl,
   }
   const movieIsFavorite = isFavorite(movie.id)
+  const movieIsCompared = isCompared(movie.id)
   const backRoute =
     typeof location.state === 'object' &&
     location.state !== null &&
@@ -244,6 +248,19 @@ export function MovieDetailsPage() {
               }
             >
               {movieIsFavorite ? <FaStar /> : <FaRegStar />}
+            </button>
+
+            <button
+              type="button"
+              className={
+                movieIsCompared
+                  ? 'movie-details-page__compare movie-details-page__compare--active'
+                  : 'movie-details-page__compare'
+              }
+              aria-label={movieIsCompared ? 'Убрать из сравнения' : 'Добавить в сравнение'}
+              onClick={() => toggleCompareMovie(favoriteMovie)}
+            >
+              <LuScale />
             </button>
 
             {posterUrl ? (
