@@ -2,6 +2,7 @@ import { useEffect, useMemo, useRef, useState } from 'react'
 import { useSearchParams } from 'react-router-dom'
 import { Button, Group, Spinner, Text } from '@vkontakte/vkui'
 import { getMovies } from '@/api/movies'
+import { useCompare } from '@/app/providers/compare-context'
 import { useFavorites } from '@/app/providers/favorites-context'
 import { MovieCard } from '@/components/movie-card/MovieCard'
 import { InfoCard } from '@/components/info-card/InfoCard'
@@ -68,6 +69,7 @@ export function MoviesPage() {
   const isFetchingMoreRef = useRef(false)
   const currentPageRef = useRef(0)
   const totalPagesRef = useRef(0)
+  const { isCompared, toggleCompareMovie } = useCompare()
   const { isFavorite, removeFromFavorites, requestAddToFavorites } = useFavorites()
   const filters = useMemo(() => parseMoviesFilters(searchParams), [searchParams])
   const moviesQuery = useMemo(() => mapFiltersToMoviesQuery(filters), [filters])
@@ -323,6 +325,8 @@ export function MoviesPage() {
             onFavoriteToggle={() =>
               isFavorite(movie.id) ? removeFromFavorites(movie.id) : requestAddToFavorites(movie)
             }
+            isCompared={isCompared(movie.id)}
+            onCompareToggle={() => toggleCompareMovie(movie)}
           />
         ))}
       </div>
