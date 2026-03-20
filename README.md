@@ -9,7 +9,7 @@
 
 ## Демо
 
-[Посмотреть live demo](https://vk-movie-app-sandy.vercel.app/movies)
+[Посмотреть live demo](https://vk-test-app-seven.vercel.app/movies)
 
 > Для live demo в проекте предусмотрен fallback на локальные mock-данные.
 > Это сделано из-за ограничений бесплатного тарифа API: приложение использует ПоискКино API (`https://poiskkino.dev`), а запросы идут к `https://api.poiskkino.dev/v1.4`.
