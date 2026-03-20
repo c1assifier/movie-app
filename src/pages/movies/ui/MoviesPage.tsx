@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from 'react'
+import { useEffect, useMemo, useRef, useState } from 'react'
 import { useSearchParams } from 'react-router-dom'
 import { Button, Group, Spinner, Text } from '@vkontakte/vkui'
 import { getMovies } from '@/api/movies'
@@ -18,45 +18,91 @@ type MoviesRequestState =
       status: 'idle' | 'loading'
       items: MovieListItem[]
       total: number
+      page: number
+      pages: number
       error: null
+      isFetchingMore: false
     }
   | {
       status: 'success'
       items: MovieListItem[]
       total: number
+      page: number
+      pages: number
       error: null
+      isFetchingMore: boolean
     }
   | {
       status: 'error'
       items: MovieListItem[]
       total: number
+      page: number
+      pages: number
       error: string
+      isFetchingMore: false
     }
 
 const initialState: MoviesRequestState = {
   status: 'idle',
   items: [],
   total: 0,
+  page: 0,
+  pages: 0,
   error: null,
+  isFetchingMore: false,
+}
+
+function mergeMovies(currentItems: MovieListItem[], nextItems: MovieListItem[]) {
+  const seenIds = new Set(currentItems.map((movie) => movie.id))
+  const uniqueNextItems = nextItems.filter((movie) => !seenIds.has(movie.id))
+
+  return [...currentItems, ...uniqueNextItems]
 }
 
 export function MoviesPage() {
   const [searchParams, setSearchParams] = useSearchParams()
   const [moviesState, setMoviesState] = useState<MoviesRequestState>(initialState)
+  const loadMoreRef = useRef<HTMLDivElement | null>(null)
+  const canLoadMoreRef = useRef(true)
+  const isFetchingMoreRef = useRef(false)
+  const currentPageRef = useRef(0)
+  const totalPagesRef = useRef(0)
   const filters = useMemo(() => parseMoviesFilters(searchParams), [searchParams])
+  const moviesQuery = useMemo(() => mapFiltersToMoviesQuery(filters), [filters])
+
+  function applyFilters(nextFilters: typeof filters) {
+    setSearchParams(buildMoviesSearchParams(nextFilters), { replace: true })
+  }
+
+  useEffect(() => {
+    currentPageRef.current = moviesState.page
+    totalPagesRef.current = moviesState.pages
+    isFetchingMoreRef.current = moviesState.isFetchingMore
+  }, [moviesState.page, moviesState.pages, moviesState.isFetchingMore])
 
   useEffect(() => {
     let isMounted = true
+    canLoadMoreRef.current = true
+    isFetchingMoreRef.current = false
+    currentPageRef.current = 0
+    totalPagesRef.current = 0
 
     async function loadMovies() {
-      setMoviesState((currentState) => ({
-        ...currentState,
+      setMoviesState({
         status: 'loading',
+        items: [],
+        total: 0,
+        page: 0,
+        pages: 0,
         error: null,
-      }))
+        isFetchingMore: false,
+      })
 
       try {
-        const response = await getMovies(mapFiltersToMoviesQuery(filters))
+        const response = await getMovies({
+          ...moviesQuery,
+          page: 1,
+        })
 
         if (!isMounted) {
           return
@@ -66,7 +112,10 @@ export function MoviesPage() {
           status: 'success',
           items: response.items,
           total: response.total,
+          page: response.page,
+          pages: response.pages,
           error: null,
+          isFetchingMore: false,
         })
       } catch (error) {
         if (!isMounted) {
@@ -79,7 +128,10 @@ export function MoviesPage() {
           status: 'error',
           items: [],
           total: 0,
+          page: 0,
+          pages: 0,
           error: message,
+          isFetchingMore: false,
         })
       }
     }
@@ -89,7 +141,115 @@ export function MoviesPage() {
     return () => {
       isMounted = false
     }
-  }, [filters])
+  }, [moviesQuery])
+
+  useEffect(() => {
+    if (moviesState.status !== 'success') {
+      return
+    }
+
+    const node = loadMoreRef.current
+
+    if (!node) {
+      return
+    }
+
+    let isMounted = true
+
+    async function loadNextPage() {
+      if (
+        !canLoadMoreRef.current ||
+        isFetchingMoreRef.current ||
+        currentPageRef.current >= totalPagesRef.current
+      ) {
+        return
+      }
+
+      canLoadMoreRef.current = false
+      isFetchingMoreRef.current = true
+
+      setMoviesState((currentState) => {
+        if (currentState.status !== 'success') {
+          return currentState
+        }
+
+        return {
+          ...currentState,
+          isFetchingMore: true,
+        }
+      })
+
+      try {
+        const response = await getMovies({
+          ...moviesQuery,
+          page: currentPageRef.current + 1,
+        })
+
+        if (!isMounted) {
+          return
+        }
+
+        setMoviesState((currentState) => {
+          if (currentState.status !== 'success') {
+            return currentState
+          }
+
+          return {
+            ...currentState,
+            items: mergeMovies(currentState.items, response.items),
+            total: response.total,
+            page: response.page,
+            pages: response.pages,
+            isFetchingMore: false,
+          }
+        })
+      } catch {
+        if (!isMounted) {
+          return
+        }
+
+        canLoadMoreRef.current = true
+
+        setMoviesState((currentState) => {
+          if (currentState.status !== 'success') {
+            return currentState
+          }
+
+          return {
+            ...currentState,
+            isFetchingMore: false,
+          }
+        })
+      } finally {
+        isFetchingMoreRef.current = false
+      }
+    }
+
+    const observer = new IntersectionObserver(
+      ([entry]) => {
+        if (!entry) {
+          return
+        }
+
+        if (!entry.isIntersecting) {
+          canLoadMoreRef.current = true
+          return
+        }
+
+        void loadNextPage()
+      },
+      {
+        rootMargin: '120px 0px',
+      },
+    )
+
+    observer.observe(node)
+
+    return () => {
+      isMounted = false
+      observer.disconnect()
+    }
+  }, [moviesQuery, moviesState.status])
 
   if (moviesState.status === 'idle' || moviesState.status === 'loading') {
     return (
@@ -127,15 +287,15 @@ export function MoviesPage() {
 
         <MoviesFilters
           filters={filters}
-          onApply={(nextFilters) =>
-            setSearchParams(buildMoviesSearchParams(nextFilters), { replace: true })
-          }
+          onApply={applyFilters}
         />
 
         <InfoCard title="Ничего не найдено" description="Попробуйте ослабить фильтры или сбросить их." />
       </section>
     )
   }
+
+  const hasMore = moviesState.page < moviesState.pages
 
   return (
     <section className="movies-page">
@@ -149,7 +309,7 @@ export function MoviesPage() {
 
       <MoviesFilters
         filters={filters}
-        onApply={(nextFilters) => setSearchParams(buildMoviesSearchParams(nextFilters), { replace: true })}
+        onApply={applyFilters}
       />
 
       <div className="movies-page__grid">
@@ -157,6 +317,14 @@ export function MoviesPage() {
           <MovieCard key={movie.id} movie={movie} />
         ))}
       </div>
+
+      {hasMore ? <div ref={loadMoreRef} className="movies-page__sentinel" aria-hidden="true" /> : null}
+
+      {moviesState.isFetchingMore ? (
+        <div className="movies-page__load-more">
+          <Spinner size="m" />
+        </div>
+      ) : null}
     </section>
   )
 }
