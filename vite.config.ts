@@ -29,6 +29,12 @@ export default defineConfig(({ mode }) => {
             'X-API-KEY': env.POISKKINO_API_KEY,
           },
         },
+        '/poster-proxy': {
+          target: 'https://avatars.mds.yandex.net',
+          changeOrigin: true,
+          secure: true,
+          rewrite: (requestPath) => requestPath.replace(/^\/poster-proxy/, ''),
+        },
       },
     },
   }
