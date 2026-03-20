@@ -17,22 +17,23 @@ export class ApiError extends Error {
 }
 
 export async function requestJson<T>({ path, query }: RequestOptions): Promise<T> {
-  if (!apiConfig.apiKey) {
-    throw new ApiError('POISKKINO_API_KEY is not configured', 500)
-  }
-
   const searchParams = query ? createSearchParams(query) : new URLSearchParams()
   const requestUrl = `${apiConfig.baseUrl}${path}${searchParams.size ? `?${searchParams}` : ''}`
 
   const response = await fetch(requestUrl, {
     headers: {
-      'X-API-KEY': apiConfig.apiKey,
       Accept: 'application/json',
     },
   })
 
   if (!response.ok) {
     throw new ApiError(`Request failed with status ${response.status}`, response.status)
+  }
+
+  const contentType = response.headers.get('content-type') || ''
+
+  if (!contentType.includes('application/json')) {
+    throw new ApiError('API returned a non-JSON response', response.status)
   }
 
   return response.json() as Promise<T>
