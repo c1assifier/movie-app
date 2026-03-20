@@ -8,10 +8,62 @@
   display: grid;
   grid-template-columns: 280px 1px minmax(0, 1fr);
   min-height: calc(100vh - 48px);
+  transition: grid-template-columns 0.28s ease;
+}
+
+.app-layout--collapsed {
+  grid-template-columns: 88px 1px minmax(0, 1fr);
 }
 
 .app-layout__sidebar {
+  min-width: 0;
   padding: 20px;
+  transition: padding 0.28s ease;
+}
+
+.app-layout__sidebar-inner {
+  display: grid;
+  gap: 16px;
+}
+
+.app-layout__sidebar-top {
+  display: flex;
+  justify-content: flex-end;
+}
+
+.app-layout__toggle {
+  width: 44px;
+  height: 44px;
+  border: 1px solid rgba(81, 129, 184, 0.22);
+  border-radius: 14px;
+  background: rgba(24, 33, 43, 0.9);
+  color: var(--app-text-primary);
+  transition:
+    background-color 0.2s ease,
+    border-color 0.2s ease,
+    transform 0.2s ease;
+}
+
+.app-layout__toggle svg {
+  width: 22px;
+  height: 22px;
+}
+
+.app-layout__toggle:hover {
+  background: rgba(31, 42, 54, 0.96);
+  border-color: rgba(81, 129, 184, 0.38);
+}
+
+.app-layout__toggle:active {
+  transform: scale(0.97);
+}
+
+.app-layout--collapsed .app-layout__sidebar-top {
+  justify-content: center;
+}
+
+.app-layout__nav-group {
+  overflow: hidden;
 }
 
 .app-layout__nav {
@@ -26,7 +78,8 @@
   transition:
     background-color 0.2s ease,
     border-color 0.2s ease,
-    transform 0.2s ease;
+    transform 0.2s ease,
+    padding 0.28s ease;
 }
 
 .app-layout__link:hover {
@@ -38,16 +91,53 @@
   border-color: rgba(81, 129, 184, 0.32);
 }
 
+.app-layout__link-label {
+  display: block;
+  overflow: hidden;
+  white-space: nowrap;
+  opacity: 1;
+  transition:
+    opacity 0.2s ease,
+    max-width 0.28s ease;
+  max-width: 180px;
+}
+
+.app-layout--collapsed .app-layout__link {
+  padding-inline: 12px;
+}
+
+.app-layout--collapsed .app-layout__link-label {
+  max-width: 0;
+  opacity: 0;
+}
+
 .app-layout__separator {
   height: 100%;
   background: rgba(237, 238, 240, 0.08);
 }
 
 .app-layout__content {
+  min-width: 0;
   padding: 24px;
 }
 
-.app-layout__content > * {
+.app-layout__content-inner {
+  display: grid;
+  gap: 20px;
+  width: min(1280px, 100%);
+  margin: 0 auto;
+}
+
+.app-layout__content-top {
+  display: flex;
+  justify-content: flex-start;
+}
+
+.app-layout__content-toggle {
+  display: none;
+}
+
+.app-layout__content-inner > * {
   max-width: 100%;
 }
 
@@ -63,5 +153,13 @@
 
   .app-layout__content {
     padding: 16px;
+  }
+
+  .app-layout__content-inner {
+    gap: 16px;
+  }
+
+  .app-layout__content-toggle {
+    display: inline-flex;
   }
 }

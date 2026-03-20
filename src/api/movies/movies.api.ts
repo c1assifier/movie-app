@@ -44,8 +44,6 @@ export async function getMovies(params?: MoviesQueryParams) {
     query: createMoviesQuery(params),
   })
 
-  console.log('movies list response', response)
-
   return mapPaginatedMovies(response)
 }
 
@@ -56,8 +54,6 @@ export async function getMovieById(movieId: string | number) {
       selectFields: MOVIE_DETAILS_FIELDS,
     },
   })
-
-  console.log('movie details response', response)
 
   return mapMovieDetails(response)
 }

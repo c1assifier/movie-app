@@ -1,8 +1,15 @@
-import { useEffect, useState } from 'react'
+import { useEffect, useMemo, useState } from 'react'
+import { useSearchParams } from 'react-router-dom'
 import { Button, Group, Spinner, Text } from '@vkontakte/vkui'
 import { getMovies } from '@/api/movies'
 import { MovieCard } from '@/components/movie-card/MovieCard'
 import { InfoCard } from '@/components/info-card/InfoCard'
+import {
+  buildMoviesSearchParams,
+  mapFiltersToMoviesQuery,
+  parseMoviesFilters,
+} from '@/pages/movies/model/filters'
+import { MoviesFilters } from '@/pages/movies/ui/MoviesFilters'
 import type { MovieListItem } from '@/types/movie'
 import '@/pages/movies/ui/MoviesPage.css'
 
@@ -34,7 +41,9 @@ const initialState: MoviesRequestState = {
 }
 
 export function MoviesPage() {
+  const [searchParams, setSearchParams] = useSearchParams()
   const [moviesState, setMoviesState] = useState<MoviesRequestState>(initialState)
+  const filters = useMemo(() => parseMoviesFilters(searchParams), [searchParams])
 
   useEffect(() => {
     let isMounted = true
@@ -47,7 +56,7 @@ export function MoviesPage() {
       }))
 
       try {
-        const response = await getMovies()
+        const response = await getMovies(mapFiltersToMoviesQuery(filters))
 
         if (!isMounted) {
           return
@@ -80,7 +89,7 @@ export function MoviesPage() {
     return () => {
       isMounted = false
     }
-  }, [])
+  }, [filters])
 
   if (moviesState.status === 'idle' || moviesState.status === 'loading') {
     return (
@@ -97,7 +106,7 @@ export function MoviesPage() {
     return (
       <InfoCard
         title="Не удалось загрузить каталог"
-        description="Во время запроса к API произошла ошибка."
+        description={moviesState.error || 'Во время запроса к API произошла ошибка.'}
         footer={
           <Button mode="secondary" onClick={() => window.location.reload()}>
             Обновить страницу
@@ -108,7 +117,24 @@ export function MoviesPage() {
   }
 
   if (moviesState.items.length === 0) {
-    return <InfoCard title="Каталог" description="Список фильмов пока пуст." />
+    return (
+      <section className="movies-page">
+        <header className="movies-page__header">
+          <div className="movies-page__title-block">
+            <h1 className="movies-page__title">Каталог</h1>
+          </div>
+        </header>
+
+        <MoviesFilters
+          filters={filters}
+          onApply={(nextFilters) =>
+            setSearchParams(buildMoviesSearchParams(nextFilters), { replace: true })
+          }
+        />
+
+        <InfoCard title="Ничего не найдено" description="Попробуйте ослабить фильтры или сбросить их." />
+      </section>
+    )
   }
 
   return (
@@ -120,6 +146,11 @@ export function MoviesPage() {
 
         <span className="movies-page__meta">Найдено: {moviesState.total}</span>
       </header>
+
+      <MoviesFilters
+        filters={filters}
+        onApply={(nextFilters) => setSearchParams(buildMoviesSearchParams(nextFilters), { replace: true })}
+      />
 
       <div className="movies-page__grid">
         {moviesState.items.map((movie) => (
