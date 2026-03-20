@@ -17,6 +17,7 @@ export default defineConfig(({ mode }) => {
     },
     define: {
       __POISKKINO_API_URL__: JSON.stringify(env.POISKKINO_API_URL),
+      __POISKKINO_HAS_API_KEY__: JSON.stringify(Boolean(env.POISKKINO_API_KEY)),
     },
     server: {
       proxy: {

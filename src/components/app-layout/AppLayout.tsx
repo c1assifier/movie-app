@@ -1,5 +1,5 @@
 import { useState } from 'react'
-import { NavLink, Outlet } from 'react-router-dom'
+import { NavLink, Outlet, useLocation } from 'react-router-dom'
 import { LuPanelLeftClose, LuPanelLeftOpen } from 'react-icons/lu'
 import {
   Group,
@@ -22,6 +22,31 @@ const navItems = [
 
 export function AppLayout() {
   const [isSidebarCollapsed, setIsSidebarCollapsed] = useState(false)
+  const location = useLocation()
+
+  function isNavItemActive(route: string) {
+    if (location.pathname === route) {
+      return true
+    }
+
+    if (location.pathname.startsWith('/movies/')) {
+      const fromRoute =
+        typeof location.state === 'object' &&
+        location.state !== null &&
+        'from' in location.state &&
+        typeof location.state.from === 'string'
+          ? location.state.from
+          : null
+
+      if (fromRoute) {
+        return fromRoute === route
+      }
+
+      return route === ROUTES.movies
+    }
+
+    return false
+  }
 
   return (
     <SplitLayout>
@@ -51,10 +76,10 @@ export function AppLayout() {
                 <nav className="app-layout__nav" aria-label="Основная навигация">
                   {navItems.map((item) => (
                     <NavLink key={item.to} to={item.to}>
-                      {({ isActive }) => (
+                      {() => (
                         <SimpleCell
                           className={
-                            isActive
+                            isNavItemActive(item.to)
                               ? 'app-layout__link app-layout__link--active'
                               : 'app-layout__link'
                           }
