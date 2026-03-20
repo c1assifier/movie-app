@@ -1,0 +1,59 @@
+.confirm-modal {
+  position: fixed;
+  inset: 0;
+  z-index: 1000;
+  display: grid;
+  place-items: center;
+  padding: 20px;
+  background: rgba(4, 7, 11, 0.72);
+  backdrop-filter: blur(8px);
+}
+
+.confirm-modal__card {
+  width: min(460px, 100%);
+  border: 1px solid rgba(237, 238, 240, 0.08);
+  border-radius: 24px;
+  background: #141b23;
+  box-shadow: 0 28px 60px rgba(0, 0, 0, 0.34);
+}
+
+.confirm-modal__content {
+  display: grid;
+  gap: 12px;
+  padding: 24px 24px 16px;
+}
+
+.confirm-modal__title {
+  color: var(--app-text-primary);
+  font-size: 26px;
+  font-weight: 700;
+  line-height: 1.05;
+}
+
+.confirm-modal__description {
+  color: var(--app-text-secondary);
+  font-size: 16px;
+  line-height: 1.6;
+}
+
+.confirm-modal__actions {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 12px;
+  padding: 0 24px 24px;
+}
+
+@media (max-width: 640px) {
+  .confirm-modal {
+    padding: 16px;
+  }
+
+  .confirm-modal__content {
+    padding: 20px 20px 14px;
+  }
+
+  .confirm-modal__actions {
+    grid-template-columns: minmax(0, 1fr);
+    padding: 0 20px 20px;
+  }
+}
